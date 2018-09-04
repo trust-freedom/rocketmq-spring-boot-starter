@@ -34,11 +34,24 @@
             <version>${rocketmq.version}</version>
         </dependency>
 
+        <!-- spring message接口 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-messaging</artifactId>
+        </dependency>
 
+        <!-- 结合@ConfigurationProperties，生成配置元数据 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <!-- fastjson -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.49</version>
         </dependency>
 
     </dependencies>
