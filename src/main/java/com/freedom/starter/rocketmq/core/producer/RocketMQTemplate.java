@@ -1,4 +1,4 @@
-package com.freedom.starter.rocketmq.core;
+package com.freedom.starter.rocketmq.core.producer;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
@@ -17,6 +17,9 @@ import org.springframework.util.Assert;
 
 import java.nio.charset.Charset;
 
+/**
+ * 发送RocketMQ消息的模板类
+ */
 public class RocketMQTemplate /*extends AbstractMessageSendingTemplate<String>*/ implements InitializingBean, DisposableBean {
     private static final Logger logger = LoggerFactory.getLogger(RocketMQTemplate.class);
 
