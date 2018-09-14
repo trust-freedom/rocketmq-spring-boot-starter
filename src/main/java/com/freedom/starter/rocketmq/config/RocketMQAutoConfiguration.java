@@ -206,7 +206,7 @@ public class RocketMQAutoConfiguration {
                 }
             }
 
-            logger.info("register rocketMQ listener to container, listenerBeanName:{}, containerBeanName:{}", beanName, containerBeanName);
+            logger.info("register rocketmq listener to container, listenerBeanName:{}, containerBeanName:{}", beanName, containerBeanName);
         }
     }
 

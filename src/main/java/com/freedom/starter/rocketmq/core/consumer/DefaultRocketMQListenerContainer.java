@@ -14,8 +14,6 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.freedom.starter.rocketmq.enums.ConsumeMode;
 import com.freedom.starter.rocketmq.enums.SelectorType;
-import jdk.nashorn.internal.objects.annotations.Getter;
-import jdk.nashorn.internal.objects.annotations.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -72,6 +70,9 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Dispo
 
     /** 最大消费线程数，默认64 */
     private int consumeThreadMax = 64;
+
+    /** 最大批量消费消息数量，默认值1 */
+    private int consumeMessageBatchMaxSize = 1;
 
 
     /**
@@ -163,6 +164,12 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Dispo
     }
     public void setConsumeThreadMax(int consumeThreadMax) {
         this.consumeThreadMax = consumeThreadMax;
+    }
+    public int getConsumeMessageBatchMaxSize() {
+        return consumeMessageBatchMaxSize;
+    }
+    public void setConsumeMessageBatchMaxSize(int consumeMessageBatchMaxSize) {
+        this.consumeMessageBatchMaxSize = consumeMessageBatchMaxSize;
     }
     public int getDelayLevelWhenNextConsume() {
         return delayLevelWhenNextConsume;
@@ -258,6 +265,8 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Dispo
             consumer.setConsumeThreadMin(consumeThreadMin);
         }
 
+        consumer.setConsumeMessageBatchMaxSize(consumeMessageBatchMaxSize);  //最大批量消息大小，默认值1
+
         consumer.setMessageModel(messageModel);  //默认集群模式
 
 
@@ -317,6 +326,20 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Dispo
         }
     }
 
+    //public static void main(String[] args){
+    //    DefaultRocketMQListenerContainer container = new DefaultRocketMQListenerContainer();
+    //    container.setRocketMQListener(new TestRcoektMQListener());
+    //
+    //    Object clazz = container.getMessageType();
+    //    System.out.println(clazz);
+    //}
+    //
+    //static class TestRcoektMQListener implements RocketMQListener<String> {
+    //    @Override
+    //    public void onMessage(String message) {
+    //
+    //    }
+    //}
 
 
     /**
@@ -357,7 +380,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Dispo
                     long now = System.currentTimeMillis();
                     rocketMQListener.onMessage(doConvertMessage(messageExt));
                     long costTime = System.currentTimeMillis() - now;
-                    logger.info("consume msgId: {} cost: {} ms", messageExt.getMsgId(), costTime);
+                    logger.info("consume success. msgId: {} cost: {} ms", messageExt.getMsgId(), costTime);
                 }
                 catch (Exception e){
                     logger.error("consume message failed. messageExt:"+messageExt, e);
