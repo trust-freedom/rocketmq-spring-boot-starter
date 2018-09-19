@@ -67,4 +67,9 @@ public @interface RocketMQMessageListener {
      * 最大批量消费大小，默认1
      */
     int consumeMessageBatchMaxSize() default 1;
+
+    /**
+     * 最大重复消费次数，默认3
+     */
+    int maxReconsumeTime() default 3;
 }

@@ -74,6 +74,9 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Dispo
     /** 最大批量消费消息数量，默认值1 */
     private int consumeMessageBatchMaxSize = 1;
 
+    /** 最大重复消费次数，默认值1 */
+    private int maxReconsumeTime = 3;
+
 
     /**
      * Message consume retry strategy
@@ -170,6 +173,12 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Dispo
     }
     public void setConsumeMessageBatchMaxSize(int consumeMessageBatchMaxSize) {
         this.consumeMessageBatchMaxSize = consumeMessageBatchMaxSize;
+    }
+    public int getMaxReconsumeTime() {
+        return maxReconsumeTime;
+    }
+    public void setMaxReconsumeTime(int maxReconsumeTime) {
+        this.maxReconsumeTime = maxReconsumeTime;
     }
     public int getDelayLevelWhenNextConsume() {
         return delayLevelWhenNextConsume;
@@ -383,9 +392,18 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Dispo
                     logger.info("consume success. msgId: {} cost: {} ms", messageExt.getMsgId(), costTime);
                 }
                 catch (Exception e){
-                    logger.error("consume message failed. messageExt:"+messageExt, e);
                     context.setDelayLevelWhenNextConsume(delayLevelWhenNextConsume);  //默认值0，broker control retry frequency
-                    return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+
+                    //没到最大重试次数，返回RECONSUME_LATER
+                    if(messageExt.getReconsumeTimes() <= maxReconsumeTime) {
+                        logger.error("consume failed, recomsume time[" + messageExt.getReconsumeTimes() + "], messageExt:" + messageExt, e);
+                        return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+                    }
+                    //达到最大重试次数，返回CONSUME_SUCCESS，可结合日志收集告警人工方式排查问题
+                    else {
+                        logger.error("consume failed, reach the maximum number of retries[" + maxReconsumeTime + "]. messageExt:" + messageExt, e);
+                        return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                    }
                 }
             }
 
@@ -408,9 +426,18 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Dispo
                     logger.debug("consume {} cost: {} ms", messageExt.getMsgId(), costTime);
                 }
                 catch(Exception e){
-                    logger.error("consume message failed. messageExt:"+messageExt, e);
                     context.setSuspendCurrentQueueTimeMillis(suspendCurrentQueueTimeMillis);  //暂停默认1000ms
-                    return ConsumeOrderlyStatus.SUSPEND_CURRENT_QUEUE_A_MOMENT;  //暂停当前队列一段时间再重试，最多重试16次
+
+                    //没到最大重试次数，返回SUSPEND_CURRENT_QUEUE_A_MOMENT
+                    if(messageExt.getReconsumeTimes() <= maxReconsumeTime) {
+                        logger.error("consume failed, recomsume time[" + messageExt.getReconsumeTimes() + "], messageExt:" + messageExt, e);
+                        return ConsumeOrderlyStatus.SUSPEND_CURRENT_QUEUE_A_MOMENT;  //暂停当前队列一段时间再重试，最多重试16次
+                    }
+                    //达到最大重试次数，返回SUCCESS，可结合日志收集告警人工方式排查问题
+                    else {
+                        logger.error("consume failed, reach the maximum number of retries[" + maxReconsumeTime + "]. messageExt:" + messageExt, e);
+                        return ConsumeOrderlyStatus.SUCCESS;
+                    }
                 }
             }
 
