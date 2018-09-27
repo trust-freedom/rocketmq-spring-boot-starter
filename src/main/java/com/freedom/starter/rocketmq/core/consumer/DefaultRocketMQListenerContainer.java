@@ -299,6 +299,14 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Dispo
             default:
                 throw new IllegalArgumentException("Property 'consumeMode' was wrong.");
         }
+
+        /**
+         * provide an entryway to custom setting RocketMQ consumer
+         * 如果rocketMQListener实现了RocketMQPushConsumerLifecycleListener接口，就将consumer作为参数传入，可在consumer启动前进行配置
+         */
+        if (rocketMQListener instanceof RocketMQPushConsumerLifecycleListener) {
+            ((RocketMQPushConsumerLifecycleListener) rocketMQListener).prepareStart(consumer);
+        }
     }
 
     /**
