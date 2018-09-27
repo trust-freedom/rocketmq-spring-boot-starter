@@ -148,7 +148,7 @@ public class MyConsumer1 implements RocketMQListener<String>{
 }
 
 @RocketMQMessageListener(topic = "test-topic-2", consumerGroup = "test-consumer-group-2")
-public class MyConsumer1 implements RocketMQListener<MessageExt>{
+public class MyConsumer2 implements RocketMQListener<MessageExt>{
     public void onMessage(MessageExt message) {
         log.info("received message: {}", message);
     }
